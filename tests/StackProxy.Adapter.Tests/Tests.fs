@@ -165,3 +165,29 @@ let ``settings parse overrides`` () =
   Assert.Equal(16000, settings.TcpPort)
   Assert.Equal("custom", settings.LabelPrefix)
   Assert.Equal("mdk-proxy", settings.NetworkName)
+
+[<Fact>]
+let ``docker container info prefers compose labels`` () =
+  let info =
+    { ContainerInfo.Names = [ "/stack-service-1" ]
+      Labels =
+        labels
+          [ "com.docker.compose.service", "moneydevkit.com"
+            "com.docker.compose.project", "mdk-400" ]
+      ExposedPorts = [ 8888 ] }
+
+  let raw = ContainerInfo.toRaw info
+  Assert.Equal("moneydevkit.com", raw.ServiceName)
+  Assert.Equal<string option>(Some "mdk-400", raw.ProjectName)
+  Assert.Equal<int list>([ 8888 ], raw.ExposedPorts)
+
+[<Fact>]
+let ``docker container info falls back to name`` () =
+  let info =
+    { ContainerInfo.Names = [ "/postgres" ]
+      Labels = labels []
+      ExposedPorts = [] }
+
+  let raw = ContainerInfo.toRaw info
+  Assert.Equal("postgres", raw.ServiceName)
+  Assert.True(raw.ProjectName.IsNone)
