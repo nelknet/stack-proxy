@@ -21,6 +21,7 @@
     <Compile Include="ServiceRegistry.fs" />
     <Compile Include="Reconciler.fs" />
     <Compile Include="DockerClient.fs" />
+    <Compile Include="DockerWatcher.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
