@@ -86,3 +86,26 @@ let ``tcp routing descriptor uses tcp prefix`` () =
   let route = Routing.describe meta
   Assert.Equal("tcp_postgres_mdk_201_local", route.BackendName)
   Assert.Equal("postgres:5432", route.ServerAddress)
+
+[<Fact>]
+let ``renders http and tcp sections`` () =
+  let services =
+    [ { ServiceMetadata.ServiceName = "moneydevkit.com"
+        ProjectName = Some "mdk-200"
+        Host = "moneydevkit.mdk-200.local"
+        Mode = Protocol.Http
+        LocalPort = 8888
+        PublicPort = None }
+      { ServiceMetadata.ServiceName = "postgres"
+        ProjectName = Some "mdk-200"
+        Host = "postgres.mdk-200.local"
+        Mode = Protocol.Tcp
+        LocalPort = 5432
+        PublicPort = None } ]
+
+  let output = Rendering.render services
+
+  Assert.Contains("frontend stackproxy_http", output)
+  Assert.Contains("backend http_moneydevkit_mdk_200_local", output)
+  Assert.Contains("frontend stackproxy_tcp", output)
+  Assert.Contains("backend tcp_postgres_mdk_200_local", output)

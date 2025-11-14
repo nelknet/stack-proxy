@@ -1,7 +1,6 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="Docker.DotNet" Version="3.125.5" />
-    <PackageVersion Include="Scriban" Version="5.9.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="FSharp.Core" Version="8.0.403" />
