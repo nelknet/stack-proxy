@@ -2,27 +2,11 @@
 
 A lightweight dev proxy that lets multiple worktrees share the same host by routing HTTP and TCP traffic (e.g., Postgres) through a single HAProxy instance. Each container advertises a friendly hostname via concise `stack-proxy.*` labels, the adapter discovers services through the Docker API, renders HAProxy frontends/backends, and writes the config atomically before triggering a hot reload.
 
-## Project Layout
-
-- `src/StackProxy.Adapter` — F# control plane that:
-  - reads configuration from environment variables (`STACK_PROXY_*`),
-- watches Docker for containers attached to the shared `stack-proxy` network,
-  - infers hostnames/ports from labels or exposed ports,
-  - renders HAProxy config and writes it atomically.
-- `tests/StackProxy.Adapter.Tests` — unit tests for metadata inference, rendering, config writing, and reconciliation.
-- `PLAN.md` — implementation checklist and future work.
-
-## Next Steps
-
-- Implement the Docker event loop (initial list + streaming updates).
-- Package HAProxy + adapter into a container with an entrypoint script.
-- Provide a sample `docker-compose.proxy.yml` and docs for service-side labels.
-
 ## Running the proxy locally
 
 1. Ensure the shared `stack-proxy` network exists: `docker network create stack-proxy` (no-op if it already exists).
 2. Start stack-proxy: `docker compose -f docker-compose.proxy.yml up --build -d`. This builds the image and exposes ports 80 (HTTP) and 15432 (TCP) on your host.
-3. Any service that should be reachable from the host must attach to the `stack-proxy` network (`networks: [dev-network, stack-proxy]`). Labels are optional:
+3. Any service that should be reachable from the host must attach to the shared network. By default we look for a network named `stack-proxy`; if you reuse an existing network (e.g., `dev-network`), set `STACK_PROXY_NETWORK=dev-network` on the proxy container so the adapter watches the right network. Labels are optional:
    - **Hostnames:** If you skip `stack-proxy.host`, the adapter builds `"${service}.${COMPOSE_PROJECT_NAME}.localhost"` for you using the Compose labels. This works for most HTTP services out of the box.
    - **Ports:** If the container exposes only one internal port, we automatically use it. Add `stack-proxy.localport=<internalPort>` only when the image exposes multiple ports and you want to pick a specific one.
    - **TCP services:** Set `stack-proxy.mode=tcp` (and optionally `stack-proxy.localport`) for Postgres, Electrum, or any non-HTTP protocol. Everything else defaults to HTTP.
