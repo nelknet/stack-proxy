@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   stack-proxy:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: stack-proxy:local
     container_name: stack-proxy
     restart: unless-stopped
     networks:
@@ -17,6 +15,7 @@ services:
     environment:
       - STACK_PROXY_CONFIG_PATH=/etc/haproxy/generated.cfg
       - STACK_PROXY_NETWORK=stack-proxy
+      - STACK_PROXY_HAPROXY_PID=/var/run/haproxy.pid
 
 networks:
   stack-proxy:

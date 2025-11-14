@@ -8,7 +8,10 @@ ADAPTER_BIN="${STACK_PROXY_ADAPTER_BIN:-/app/StackProxy.Adapter.dll}"
 mkdir -p "$(dirname "$CONFIG_PATH")"
 touch "$CONFIG_PATH"
 
-haproxy -f "$HAPROXY_CFG" -p /var/run/haproxy.pid &
+HAPROXY_PID_FILE=${STACK_PROXY_HAPROXY_PID:-/var/run/haproxy.pid}
+export STACK_PROXY_HAPROXY_PID="$HAPROXY_PID_FILE"
+
+haproxy -f "$HAPROXY_CFG" -f "$CONFIG_PATH" -p "$HAPROXY_PID_FILE" &
 HAPROXY_PID=$!
 
 cleanup() {
