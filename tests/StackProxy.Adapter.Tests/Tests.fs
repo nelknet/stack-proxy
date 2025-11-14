@@ -1,6 +1,8 @@
 module StackProxy.Adapter.Tests.MetadataTests
 
+open System
 open System.Collections.Generic
+open System.IO
 open Xunit
 open StackProxy.Adapter
 
@@ -109,3 +111,26 @@ let ``renders http and tcp sections`` () =
   Assert.Contains("backend http_moneydevkit_mdk_200_local", output)
   Assert.Contains("frontend stackproxy_tcp", output)
   Assert.Contains("backend tcp_postgres_mdk_200_local", output)
+
+[<Fact>]
+let ``writes rendered config atomically`` () =
+  let services =
+    [ { ServiceMetadata.ServiceName = "moneydevkit.com"
+        ProjectName = Some "mdk-300"
+        Host = "moneydevkit.mdk-300.local"
+        Mode = Protocol.Http
+        LocalPort = 8888
+        PublicPort = None } ]
+
+  let tempDir = Path.Combine(Path.GetTempPath(), "stack-proxy-tests", Guid.NewGuid().ToString("N"))
+  Directory.CreateDirectory(tempDir) |> ignore
+  let targetPath = Path.Combine(tempDir, "haproxy.cfg")
+
+  ConfigWriter.writeConfig targetPath services
+  let first = File.ReadAllText(targetPath)
+  ConfigWriter.writeConfig targetPath services
+  let second = File.ReadAllText(targetPath)
+
+  Assert.True(File.Exists(targetPath))
+  Assert.Equal(first, second)
+  Assert.Contains("frontend stackproxy_http", second)
