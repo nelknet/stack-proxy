@@ -17,3 +17,38 @@ A lightweight dev proxy that lets multiple moneydevkit worktrees share the same 
 - Implement the Docker event loop (initial list + streaming updates).
 - Package HAProxy + adapter into a container with an entrypoint script.
 - Provide a sample `docker-compose.proxy.yml` and docs for service-side labels.
+
+## Running the proxy locally
+
+1. Ensure the shared `proxy` network exists: `docker network create proxy` (no-op if it already exists).
+2. Start stack-proxy: `docker compose -f docker-compose.proxy.yml up --build -d`. This builds the image and exposes ports 80 (HTTP) and 15432 (TCP) on your host.
+3. Any service that should be reachable from the host must:
+   - attach to the `proxy` network (`networks: [dev-network, proxy]`),
+   - define `mdk.host=service.${COMPOSE_PROJECT_NAME}.local`,
+   - set `mdk.mode=tcp` plus `mdk.localport=<internalPort>` for TCP protocols (Postgres, Electrum). HTTP services only need `mdk.host` unless they expose multiple ports.
+
+Example service snippet:
+
+```yaml
+services:
+  moneydevkit.com:
+    build: ./moneydevkit.com
+    networks: [dev-network, proxy]
+    labels:
+      mdk.host: moneydevkit.${COMPOSE_PROJECT_NAME}.local
+      mdk.localport: "8888"
+```
+
+For Postgres:
+
+```yaml
+  postgres:
+    image: postgres:16
+    networks: [dev-network, proxy]
+    labels:
+      mdk.host: postgres.${COMPOSE_PROJECT_NAME}.local
+      mdk.mode: tcp
+      mdk.localport: "5432"
+```
+
+With stack-proxy running, you can hit `http://moneydevkit.mdk-123.local` or `psql -h postgres.mdk-123.local -p 15432` without port conflicts. Update `/etc/hosts` (or use dnsmasq) so those hostnames resolve to `127.0.0.1` on your machine.
