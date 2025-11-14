@@ -127,9 +127,9 @@ let ``writes rendered config atomically`` () =
   Directory.CreateDirectory(tempDir) |> ignore
   let targetPath = Path.Combine(tempDir, "haproxy.cfg")
 
-  ConfigWriter.writeConfig targetPath services
+  ConfigWriter.writeConfig targetPath None services
   let first = File.ReadAllText(targetPath)
-  ConfigWriter.writeConfig targetPath services
+  ConfigWriter.writeConfig targetPath None services
   let second = File.ReadAllText(targetPath)
 
   Assert.True(File.Exists(targetPath))

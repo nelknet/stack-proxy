@@ -5,7 +5,7 @@ module Reconciler =
     | Upsert of containerId: string * metadata: ServiceMetadata
     | Remove of containerId: string
 
-  let applyEvents writeConfig state events =
+  let applyEvents onChange state events =
     let nextState =
       events
       |> List.fold
@@ -16,5 +16,5 @@ module Reconciler =
         state
 
     let services = ServiceRegistry.asList nextState
-    writeConfig services
+    onChange services
     nextState

@@ -31,7 +31,8 @@ module Program =
 
     let run = task {
       let! reader = DockerWatcher.watch docker settings cts.Token
-      let writeConfig services = ConfigWriter.writeConfig settings.ConfigPath services
+      let pidFile = Environment.GetEnvironmentVariable("STACK_PROXY_HAPROXY_PID") |> Option.ofObj
+      let writeConfig services = ConfigWriter.writeConfig settings.ConfigPath pidFile services
       do! startLoop reader writeConfig cts.Token
     }
 
