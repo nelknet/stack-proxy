@@ -16,7 +16,7 @@ module AdapterSettings =
   let private defaultTcpPort = 15432
   let private defaultDockerUri = "unix:///var/run/docker.sock"
   let private defaultConfigPath = "/etc/haproxy/generated.cfg"
-  let private defaultLabelPrefix = "mdk"
+  let private defaultLabelPrefix = "stack-proxy"
   let private defaultNetwork = "proxy"
 
   let private parseInt fallback (value: string option) =

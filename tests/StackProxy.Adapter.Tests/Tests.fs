@@ -38,7 +38,7 @@ let ``respects explicit host and local port labels`` () =
     raw
       "moneydevkit"
       (Some "mdk-100")
-      [ ("mdk.host", "custom.host.local"); ("mdk.localport", "3900") ]
+      [ ("stack-proxy.host", "custom.host.local"); ("stack-proxy.localport", "3900") ]
       []
   let meta = getMetadata input
   Assert.Equal("custom.host.local", meta.Host)
@@ -50,7 +50,7 @@ let ``infers tcp mode and default port when none exposed`` () =
     raw
       "postgres"
       (Some "mdk-101")
-      [ ("mdk.mode", "tcp") ]
+      [ ("stack-proxy.mode", "tcp") ]
       []
   let meta = getMetadata input
   Assert.Equal(Protocol.Tcp, meta.Mode)
@@ -58,7 +58,7 @@ let ``infers tcp mode and default port when none exposed`` () =
 
 [<Fact>]
 let ``returns none when disabled label present`` () =
-  let input = raw "admin" None [ ("mdk.disable", "true") ] [ 3000 ]
+  let input = raw "admin" None [ ("stack-proxy.disable", "true") ] [ 3000 ]
   let result = Metadata.tryCreate input
   Assert.True(result.IsNone)
 
@@ -144,7 +144,7 @@ let ``settings fall back to defaults`` () =
   Assert.Equal("/etc/haproxy/generated.cfg", settings.ConfigPath)
   Assert.Equal(80, settings.HttpPort)
   Assert.Equal(15432, settings.TcpPort)
-  Assert.Equal("mdk", settings.LabelPrefix)
+  Assert.Equal("stack-proxy", settings.LabelPrefix)
   Assert.Equal("proxy", settings.NetworkName)
 
 [<Fact>]

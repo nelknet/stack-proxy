@@ -30,7 +30,7 @@
 
 ## 6. Local Development & DX
 - [x] Provide `docker-compose.proxy.yml` that runs stack-proxy with socket + external `proxy` network.
-- [x] Document service-side changes (network attachment, optional `mdk.*` labels) with examples.
+- [x] Document service-side changes (network attachment, optional `stack-proxy.*` labels) with examples.
 - [x] Add helper script (optional) to ensure `/etc/hosts` contains `*.${COMPOSE_PROJECT_NAME}.local` entries.
 
 ## 7. Validation & Testing

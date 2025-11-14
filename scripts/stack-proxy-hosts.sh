@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-  echo "Usage: mdk-hosts.sh <slug>" >&2
+  echo "Usage: stack-proxy-hosts.sh <slug>" >&2
   exit 1
 fi
 

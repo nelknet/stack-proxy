@@ -26,7 +26,7 @@ type RawServiceInput =
 
 module Metadata =
   [<Literal>]
-  let LabelPrefix = "mdk"
+  let LabelPrefix = "stack-proxy"
 
   let private label key = $"{LabelPrefix}.{key}"
 
