@@ -22,10 +22,10 @@ A lightweight dev proxy that lets multiple worktrees share the same host by rout
 
 1. Ensure the shared `stack-proxy` network exists: `docker network create stack-proxy` (no-op if it already exists).
 2. Start stack-proxy: `docker compose -f docker-compose.proxy.yml up --build -d`. This builds the image and exposes ports 80 (HTTP) and 15432 (TCP) on your host.
-3. Any service that should be reachable from the host must:
-   - attach to the `stack-proxy` network (`networks: [dev-network, stack-proxy]`),
-   - define `stack-proxy.host=service.${COMPOSE_PROJECT_NAME}.localhost`,
-   - set `stack-proxy.mode=tcp` plus `stack-proxy.localport=<internalPort>` for TCP protocols (Postgres, Electrum). HTTP services only need `stack-proxy.host` unless they expose multiple ports.
+3. Any service that should be reachable from the host must attach to the `stack-proxy` network (`networks: [dev-network, stack-proxy]`). Labels are optional:
+   - **Hostnames:** If you skip `stack-proxy.host`, the adapter builds `"${service}.${COMPOSE_PROJECT_NAME}.localhost"` for you using the Compose labels. This works for most HTTP services out of the box.
+   - **Ports:** If the container exposes only one internal port, we automatically use it. Add `stack-proxy.localport=<internalPort>` only when the image exposes multiple ports and you want to pick a specific one.
+   - **TCP services:** Set `stack-proxy.mode=tcp` (and optionally `stack-proxy.localport`) for Postgres, Electrum, or any non-HTTP protocol. Everything else defaults to HTTP.
 
 Example service snippet:
 
@@ -34,9 +34,7 @@ services:
   moneydevkit.com:
     build: ./moneydevkit.com
     networks: [dev-network, stack-proxy]
-    labels:
-      stack-proxy.host: moneydevkit.${COMPOSE_PROJECT_NAME}.localhost
-      stack-proxy.localport: "8888"
+    # labels optional unless you want to override defaults
 ```
 
 For Postgres:
@@ -46,9 +44,7 @@ For Postgres:
     image: postgres:16
     networks: [dev-network, stack-proxy]
     labels:
-      stack-proxy.host: postgres.${COMPOSE_PROJECT_NAME}.localhost
       stack-proxy.mode: tcp
-      stack-proxy.localport: "5432"
 ```
 
 With stack-proxy running, you can hit `http://moneydevkit.mdk-123.localhost` or `psql -h postgres.mdk-123.localhost -p 15432` without port conflicts. The `.localhost` TLD automatically resolves to `127.0.0.1`, so no `/etc/hosts` edits are required.
