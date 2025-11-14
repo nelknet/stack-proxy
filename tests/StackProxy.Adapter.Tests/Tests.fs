@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open Xunit
+open Docker.DotNet.Models
 open StackProxy.Adapter
 
 let private labels (pairs: (string * string) list) =
@@ -191,6 +192,17 @@ let ``docker container info falls back to name`` () =
   let raw = ContainerInfo.toRaw info
   Assert.Equal("postgres", raw.ServiceName)
   Assert.True(raw.ProjectName.IsNone)
+
+[<Fact>]
+let ``converts docker list response to container info`` () =
+  let response = ContainerListResponse()
+  response.Names <- ResizeArray<string>([| "/svc" |])
+  response.Labels <- dict [ "com.docker.compose.service", "svc" ]
+  response.Ports <- ResizeArray<Port>([| Port(PrivatePort = 8080us) |])
+
+  let info = ContainerInfo.fromListResponse response
+  Assert.Equal<string list>([ "svc" ], info.Names)
+  Assert.Equal<int list>([ 8080 ], info.ExposedPorts)
 
 let private mkMeta name host mode port =
   { ServiceMetadata.ServiceName = name

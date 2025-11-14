@@ -2,6 +2,7 @@ namespace StackProxy.Adapter
 
 open System
 open System.Collections.Generic
+open Docker.DotNet.Models
 
 [<CLIMutable>]
 type ContainerInfo =
@@ -37,3 +38,30 @@ module ContainerInfo =
       ProjectName = inferProjectName info
       Labels = info.Labels
       ExposedPorts = info.ExposedPorts }
+
+  let fromListResponse (response: ContainerListResponse) =
+    let names =
+      if isNull response.Names then
+        []
+      else
+        response.Names |> Seq.map sanitizeName |> List.ofSeq
+
+    let labels : IReadOnlyDictionary<string, string> =
+      if isNull response.Labels then
+        upcast Dictionary<string, string>()
+      else
+        upcast Dictionary<string, string>(response.Labels)
+
+    let ports =
+      if isNull response.Ports then
+        []
+      else
+        response.Ports
+        |> Seq.choose (fun p ->
+          let portValue = int p.PrivatePort
+          if portValue <= 0 then None else Some portValue)
+        |> List.ofSeq
+
+    { Names = names
+      Labels = labels
+      ExposedPorts = ports }
