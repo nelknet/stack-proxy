@@ -52,3 +52,17 @@ For Postgres:
 ```
 
 With stack-proxy running, you can hit `http://moneydevkit.mdk-123.local` or `psql -h postgres.mdk-123.local -p 15432` without port conflicts. Update `/etc/hosts` (or use dnsmasq) so those hostnames resolve to `127.0.0.1` on your machine.
+
+## Validation & Troubleshooting
+
+1. Start stack-proxy via `docker compose -f docker-compose.proxy.yml up -d --build`.
+2. Launch a sample stack (e.g., `lightning-node`) with services attached to the `proxy` network and labeled hosts.
+3. Run `sudo scripts/mdk-hosts.sh mdk-123` to map `*.mdk-123.local` to `127.0.0.1`.
+4. Validate HTTP: `curl -H 'Host: moneydevkit.mdk-123.local' http://127.0.0.1` should return the site.
+5. Validate TCP: `psql -h postgres.mdk-123.local -p 15432 -U postgres` should connect to the stack Postgres.
+
+If something fails:
+- Check adapter logs: `docker logs stack-proxy`.
+- Inspect generated config: `docker exec stack-proxy cat /etc/haproxy/generated.cfg`.
+- Verify labels: `docker inspect <container> --format '{{ json .Config.Labels }}'`.
+- Ensure the service is on the `proxy` network: `docker inspect <container> --format '{{ json .NetworkSettings.Networks }}'`.
