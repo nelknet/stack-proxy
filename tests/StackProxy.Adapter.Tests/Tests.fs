@@ -191,3 +191,34 @@ let ``docker container info falls back to name`` () =
   let raw = ContainerInfo.toRaw info
   Assert.Equal("postgres", raw.ServiceName)
   Assert.True(raw.ProjectName.IsNone)
+
+let private mkMeta name host mode port =
+  { ServiceMetadata.ServiceName = name
+    ProjectName = None
+    Host = host
+    Mode = mode
+    LocalPort = port
+    PublicPort = None }
+
+[<Fact>]
+let ``service registry upserts and removes`` () =
+  let m1 = mkMeta "moneydevkit.com" "moneydevkit.local" Protocol.Http 8888
+  let m2 = mkMeta "admin" "admin.local" Protocol.Http 3000
+
+  let state =
+    ServiceRegistry.empty
+    |> ServiceRegistry.upsert "container1" m1
+    |> ServiceRegistry.upsert "container2" m2
+
+  let names =
+    state
+    |> ServiceRegistry.asList
+    |> List.map (fun meta -> meta.ServiceName)
+    |> List.sort
+
+  Assert.Equal<string list>([ "admin"; "moneydevkit.com" ], names)
+
+  let state' = ServiceRegistry.remove "container1" state
+  let remaining = state' |> ServiceRegistry.asList
+  Assert.Single(remaining)
+  Assert.Equal("admin", remaining.Head.ServiceName)
