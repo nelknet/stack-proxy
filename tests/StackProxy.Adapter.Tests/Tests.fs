@@ -145,7 +145,7 @@ let ``settings fall back to defaults`` () =
   Assert.Equal(80, settings.HttpPort)
   Assert.Equal(15432, settings.TcpPort)
   Assert.Equal("stack-proxy", settings.LabelPrefix)
-  Assert.Equal("proxy", settings.NetworkName)
+  Assert.Equal("stack-proxy", settings.NetworkName)
 
 [<Fact>]
 let ``settings parse overrides`` () =
