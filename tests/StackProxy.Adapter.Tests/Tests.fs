@@ -134,3 +134,34 @@ let ``writes rendered config atomically`` () =
   Assert.True(File.Exists(targetPath))
   Assert.Equal(first, second)
   Assert.Contains("frontend stackproxy_http", second)
+
+[<Fact>]
+let ``settings fall back to defaults`` () =
+  let env _ = None
+  let settings = AdapterSettings.fromEnv env
+  Assert.Equal("unix:///var/run/docker.sock", settings.DockerUri)
+  Assert.Equal("/etc/haproxy/generated.cfg", settings.ConfigPath)
+  Assert.Equal(80, settings.HttpPort)
+  Assert.Equal(15432, settings.TcpPort)
+  Assert.Equal("mdk", settings.LabelPrefix)
+  Assert.Equal("proxy", settings.NetworkName)
+
+[<Fact>]
+let ``settings parse overrides`` () =
+  let env key =
+    match key with
+    | "STACK_PROXY_DOCKER_URI" -> Some "npipe://./pipe/docker_engine"
+    | "STACK_PROXY_CONFIG_PATH" -> Some "/tmp/haproxy.cfg"
+    | "STACK_PROXY_HTTP_PORT" -> Some "8080"
+    | "STACK_PROXY_TCP_PORT" -> Some "16000"
+    | "STACK_PROXY_LABEL_PREFIX" -> Some "custom"
+    | "STACK_PROXY_NETWORK" -> Some "mdk-proxy"
+    | _ -> None
+
+  let settings = AdapterSettings.fromEnv env
+  Assert.Equal("npipe://./pipe/docker_engine", settings.DockerUri)
+  Assert.Equal("/tmp/haproxy.cfg", settings.ConfigPath)
+  Assert.Equal(8080, settings.HttpPort)
+  Assert.Equal(16000, settings.TcpPort)
+  Assert.Equal("custom", settings.LabelPrefix)
+  Assert.Equal("mdk-proxy", settings.NetworkName)
