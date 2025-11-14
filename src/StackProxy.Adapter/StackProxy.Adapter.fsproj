@@ -19,6 +19,7 @@
     <Compile Include="Rendering.fs" />
     <Compile Include="ConfigWriter.fs" />
     <Compile Include="ServiceRegistry.fs" />
+    <Compile Include="Reconciler.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>

@@ -220,5 +220,24 @@ let ``service registry upserts and removes`` () =
 
   let state' = ServiceRegistry.remove "container1" state
   let remaining = state' |> ServiceRegistry.asList
-  Assert.Single(remaining)
-  Assert.Equal("admin", remaining.Head.ServiceName)
+  let only = Assert.Single(remaining)
+  Assert.Equal("admin", only.ServiceName)
+
+[<Fact>]
+let ``reconciler applies events and writes config`` () =
+  let writes = ResizeArray<ServiceMetadata list>()
+  let writer services = writes.Add(services)
+
+  let meta = mkMeta "moneydevkit.com" "moneydevkit.local" Protocol.Http 8888
+  let events = [ Reconciler.Upsert("container1", meta) ]
+
+  let nextState = Reconciler.applyEvents writer ServiceRegistry.empty events
+
+  Assert.Equal(1, writes.Count)
+  Assert.Equal("moneydevkit.local", writes[0] |> List.head |> fun s -> s.Host)
+
+  let events2 = [ Reconciler.Remove "container1" ]
+  let finalState = Reconciler.applyEvents writer nextState events2
+
+  Assert.Equal(2, writes.Count)
+  Assert.Empty(ServiceRegistry.asList finalState)
