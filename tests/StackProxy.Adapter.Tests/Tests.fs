@@ -58,3 +58,31 @@ let ``returns none when disabled label present`` () =
   let input = raw "admin" None [ ("mdk.disable", "true") ] [ 3000 ]
   let result = Metadata.tryCreate input
   Assert.True(result.IsNone)
+
+[<Fact>]
+let ``routing descriptor normalizes host names`` () =
+  let meta =
+    { ServiceMetadata.ServiceName = "moneydevkit.com"
+      ProjectName = Some "mdk-200"
+      Host = "MoneyDevkit-APP.mdk-200.local"
+      Mode = Protocol.Http
+      LocalPort = 8888
+      PublicPort = None }
+
+  let route = Routing.describe meta
+  Assert.Equal("http_moneydevkit_app_mdk_200_local", route.BackendName)
+  Assert.Equal("moneydevkit.com:8888", route.ServerAddress)
+
+[<Fact>]
+let ``tcp routing descriptor uses tcp prefix`` () =
+  let meta =
+    { ServiceMetadata.ServiceName = "postgres"
+      ProjectName = Some "mdk-201"
+      Host = "postgres.mdk-201.local"
+      Mode = Protocol.Tcp
+      LocalPort = 5432
+      PublicPort = None }
+
+  let route = Routing.describe meta
+  Assert.Equal("tcp_postgres_mdk_201_local", route.BackendName)
+  Assert.Equal("postgres:5432", route.ServerAddress)
