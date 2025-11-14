@@ -66,3 +66,13 @@ If something fails:
 - Inspect generated config: `docker exec stack-proxy cat /etc/haproxy/generated.cfg`.
 - Verify labels: `docker inspect <container> --format '{{ json .Config.Labels }}'`.
 - Ensure the service is on the `proxy` network: `docker inspect <container> --format '{{ json .NetworkSettings.Networks }}'`.
+
+### Stress-testing container churn
+
+To verify that stack-proxy keeps up with frequent restarts:
+1. Start the proxy as described above.
+2. In your feature stack, run `watch -n 1 'docker compose restart moneydevkit.com'` to bounce a service repeatedly, or use `docker compose up --scale moneydevkit.com=3` followed by random `docker kill` commands.
+3. Tail the proxy logs (`docker logs -f stack-proxy`) and ensure each start/stop results in a regenerated HAProxy config without errors.
+4. Hit the service hostname between restarts to confirm zero-downtime reloads.
+
+If the adapter falls behind, increase `watch` intervals or check `/etc/haproxy/generated.cfg` for stale entries.

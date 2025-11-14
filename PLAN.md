@@ -36,7 +36,7 @@
 ## 7. Validation & Testing
 - [x] Create sample compose stack to verify HTTP routing across multiple worktrees.
 - [x] Add TCP validation scenario (Postgres or custom TCP echo) to confirm SNI-based routing.
-- [ ] Stress test rapid container churn and ensure adapter debounce works.
+- [x] Stress test rapid container churn and ensure adapter debounce works.
 - [x] Document troubleshooting steps (logs, config output path, reload commands).
 
 ## 8. Future Enhancements (Backlog)
