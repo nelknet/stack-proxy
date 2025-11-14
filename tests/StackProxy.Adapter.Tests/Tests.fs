@@ -204,6 +204,20 @@ let ``converts docker list response to container info`` () =
   Assert.Equal<string list>([ "svc" ], info.Names)
   Assert.Equal<int list>([ 8080 ], info.ExposedPorts)
 
+[<Fact>]
+let ``converts inspect response to container info`` () =
+  let inspect = ContainerInspectResponse()
+  inspect.Name <- "/svc"
+  inspect.Config <- Config()
+  inspect.Config.Labels <- dict [ "com.docker.compose.project", "mdk-500" ]
+  inspect.NetworkSettings <- NetworkSettings()
+  let ports = dict [ "8888/tcp", null :> IList<PortBinding> ]
+  inspect.NetworkSettings.Ports <- ports
+
+  let info = ContainerInfo.fromInspectResponse inspect
+  Assert.Equal<string list>([ "svc" ], info.Names)
+  Assert.Equal<int list>([ 8888 ], info.ExposedPorts)
+
 let private mkMeta name host mode port =
   { ServiceMetadata.ServiceName = name
     ProjectName = None

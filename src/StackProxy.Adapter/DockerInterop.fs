@@ -65,3 +65,40 @@ module ContainerInfo =
     { Names = names
       Labels = labels
       ExposedPorts = ports }
+
+  let fromInspectResponse (response: ContainerInspectResponse) =
+    let names =
+      if String.IsNullOrWhiteSpace response.Name then
+        []
+      else
+        [ sanitizeName response.Name ]
+
+    let labels : IReadOnlyDictionary<string, string> =
+      if isNull response.Config || isNull response.Config.Labels then
+        upcast Dictionary<string, string>()
+      else
+        upcast Dictionary<string, string>(response.Config.Labels)
+
+    let ports =
+      if isNull response.NetworkSettings || isNull response.NetworkSettings.Ports then
+        []
+      else
+        response.NetworkSettings.Ports
+        |> Seq.choose (fun kv ->
+          let key = kv.Key
+          if String.IsNullOrWhiteSpace key then None
+          else
+            let parts = key.Split('/', StringSplitOptions.RemoveEmptyEntries)
+            match parts with
+            | [| portStr |]
+            | [| portStr; _ |] ->
+              match Int32.TryParse(portStr) with
+              | true, value when value > 0 -> Some value
+              | _ -> None
+            | _ -> None)
+        |> Seq.distinct
+        |> List.ofSeq
+
+    { Names = names
+      Labels = labels
+      ExposedPorts = ports }
