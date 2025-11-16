@@ -1,0 +1,15 @@
+services:
+  stack-proxy:
+    image: ghcr.io/nelknet/stack-proxy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "5432:5432"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - stack-proxy
+
+networks:
+  stack-proxy:
+    external: true

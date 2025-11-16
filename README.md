@@ -5,7 +5,7 @@ A lightweight dev proxy that lets multiple worktrees share the same host by rout
 ## Running the proxy locally
 
 1. Ensure the shared `stack-proxy` network exists: `docker network create stack-proxy` (no-op if it already exists).
-2. Start stack-proxy: `docker compose -f docker-compose.proxy.yml up --build -d`. This builds the image and exposes ports 80 (HTTP) and 5432 (TCP) on your host.
+2. Start stack-proxy: `docker compose -f docker-compose.stack-proxy.yml up -d`. This pulls the published image and exposes ports 80 (HTTP) and 5432 (TCP) on your host.
 3. Any service that should be reachable from the host must attach to the shared network. By default we look for a network named `stack-proxy`; if you reuse an existing network (e.g., `dev-network`), set `STACK_PROXY_NETWORK=dev-network` on the proxy container so the adapter watches the right network. Labels are optional:
    - **Hostnames:** If you skip `stack-proxy.host`, the adapter builds `"${service}.${COMPOSE_PROJECT_NAME}.localhost"` for you using the Compose labels. This works for most HTTP services out of the box.
    - **Ports:** If the container exposes only one internal port, we automatically use it. Add `stack-proxy.localport=<internalPort>` only when the image exposes multiple ports and you want to pick a specific one.
@@ -32,6 +32,30 @@ For Postgres:
 ```
 
 With stack-proxy running, you can hit `http://moneydevkit.mdk-123.localhost` or `psql -h postgres.mdk-123.localhost -p 5432` without port conflicts. The `.localhost` TLD automatically resolves to `127.0.0.1`, so no `/etc/hosts` edits are required.
+
+### Minimal `docker-compose.stack-proxy.yml`
+
+Use the provided file (or copy the snippet below) when running the proxy alongside other stacks:
+
+```yaml
+services:
+  stack-proxy:
+    image: ghcr.io/nelknet/stack-proxy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "5432:5432"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - stack-proxy
+
+networks:
+  stack-proxy:
+    external: true
+```
+
+Bring the proxy up with `docker compose -f docker-compose.stack-proxy.yml up -d`. Make sure the shared network exists first (`docker network create stack-proxy`). Every feature stack that wants routing must join this external network in addition to its own project network.
 
 ## Validation & Troubleshooting
 
