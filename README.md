@@ -11,12 +11,12 @@ A lightweight dev proxy that lets multiple worktrees share the same host by rout
    - **Ports:** If the container exposes only one internal port, we automatically use it. Add `stack-proxy.localport=<internalPort>` only when the image exposes multiple ports and you want to pick a specific one.
    - **TCP services:** Set `stack-proxy.mode=tcp` (and optionally `stack-proxy.localport`) for Postgres, Electrum, or any non-HTTP protocol. Everything else defaults to HTTP.
 
-Example service snippet:
+Example service snippet (mirrors `example/project1/docker-compose.yml`):
 
 ```yaml
 services:
-  moneydevkit.com:
-    build: ./moneydevkit.com
+  web:
+    build: ./web
     networks: [dev-network, stack-proxy]
     # labels optional unless you want to override defaults
 ```
@@ -31,7 +31,7 @@ For Postgres:
       stack-proxy.mode: tcp
 ```
 
-With stack-proxy running, you can hit `http://moneydevkit.mdk-123.localhost` or `psql -h postgres.mdk-123.localhost -p 5432` without port conflicts. The `.localhost` TLD automatically resolves to `127.0.0.1`, so no `/etc/hosts` edits are required.
+With stack-proxy running, you can hit `http://web.test1.localhost` or `psql -h postgres.test1.localhost -p 5432` without port conflicts. The `.localhost` TLD automatically resolves to `127.0.0.1`, so no `/etc/hosts` edits are required.
 
 ### Minimal `docker-compose.stack-proxy.yml`
 
@@ -74,8 +74,8 @@ Bring the stacks down with `docker compose down -v` inside each project when you
 1. Start stack-proxy via `docker compose -f docker-compose.proxy.yml up -d --build`.
 2. Launch a sample stack (e.g., `lightning-node`) with services attached to the `stack-proxy` network and labeled hosts.
 3. (Optional) If you still prefer custom domains, run `sudo scripts/stack-proxy-hosts.sh mdk-123` to map `*.mdk-123.local` to `127.0.0.1`.
-4. Validate HTTP: `curl -H 'Host: moneydevkit.mdk-123.localhost' http://127.0.0.1` should return the site.
-5. Validate TCP: `psql -h postgres.mdk-123.localhost -p 5432 -U postgres` should connect to the stack Postgres.
+4. Validate HTTP: `curl -H 'Host: web.test1.localhost' http://127.0.0.1` should return your app (or use whichever hostname your stack emits).
+5. Validate TCP: `psql -h postgres.test1.localhost -p 5432 -U postgres` should connect to your stack’s Postgres (swap in the Compose project and service names you actually use).
 
 If something fails:
 - Check adapter logs: `docker logs stack-proxy`.
@@ -87,7 +87,7 @@ If something fails:
 
 To verify that stack-proxy keeps up with frequent restarts:
 1. Start the proxy as described above.
-2. In your feature stack, run `watch -n 1 'docker compose restart moneydevkit.com'` to bounce a service repeatedly, or use `docker compose up --scale moneydevkit.com=3` followed by random `docker kill` commands.
+2. In your feature stack, run `watch -n 1 'docker compose restart web'` (or any service name you care about) to bounce a service repeatedly, or use `docker compose up --scale web=3` followed by random `docker kill` commands.
 3. Tail the proxy logs (`docker logs -f stack-proxy`) and ensure each start/stop results in a regenerated HAProxy config without errors.
 4. Hit the service hostname between restarts to confirm zero-downtime reloads.
 
