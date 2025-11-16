@@ -70,7 +70,7 @@ module Metadata =
         match raw.ExposedPorts with
         | head :: _ -> head
         | [] when mode = Protocol.Http -> 80
-        | [] -> 15432
+        | [] -> 5432
 
   let private inferPublicPort labels =
     tryGetInt (label "publicport") labels

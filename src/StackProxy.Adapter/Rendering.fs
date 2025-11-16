@@ -32,7 +32,7 @@ module Rendering =
   let private renderTcp (sb: StringBuilder) (routes: Routing.RouteDefinition list) =
     if routes.IsEmpty then () else
       appendLine sb "frontend stackproxy_tcp"
-      appendLine sb "  bind *:15432"
+      appendLine sb "  bind *:5432"
       appendLine sb "  mode tcp"
       appendLine sb "  tcp-request inspect-delay 5s"
       appendLine sb "  tcp-request content accept if WAIT_END"

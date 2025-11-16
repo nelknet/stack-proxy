@@ -54,7 +54,7 @@ let ``infers tcp mode and default port when none exposed`` () =
       []
   let meta = getMetadata input
   Assert.Equal(Protocol.Tcp, meta.Mode)
-  Assert.Equal(15432, meta.LocalPort)
+  Assert.Equal(5432, meta.LocalPort)
 
 [<Fact>]
 let ``returns none when disabled label present`` () =
@@ -143,7 +143,7 @@ let ``settings fall back to defaults`` () =
   Assert.Equal("unix:///var/run/docker.sock", settings.DockerUri)
   Assert.Equal("/etc/haproxy/generated.cfg", settings.ConfigPath)
   Assert.Equal(80, settings.HttpPort)
-  Assert.Equal(15432, settings.TcpPort)
+  Assert.Equal(5432, settings.TcpPort)
   Assert.Equal("stack-proxy", settings.LabelPrefix)
   Assert.Equal("stack-proxy", settings.NetworkName)
 

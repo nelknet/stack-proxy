@@ -13,7 +13,7 @@ type AdapterSettings =
 
 module AdapterSettings =
   let private defaultHttpPort = 80
-  let private defaultTcpPort = 15432
+  let private defaultTcpPort = 5432
   let private defaultDockerUri = "unix:///var/run/docker.sock"
   let private defaultConfigPath = "/etc/haproxy/generated.cfg"
   let private defaultLabelPrefix = "stack-proxy"
