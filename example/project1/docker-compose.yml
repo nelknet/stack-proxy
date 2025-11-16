@@ -1,0 +1,15 @@
+services:
+  web:
+    image: python:3.12-alpine
+    working_dir: /site
+    command: python -m http.server 3000 --bind 0.0.0.0
+    volumes:
+      - ./html:/site:ro
+    expose:
+      - "3000"
+    networks:
+      - stack-proxy
+
+networks:
+  stack-proxy:
+    external: true

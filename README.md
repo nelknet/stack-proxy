@@ -57,6 +57,18 @@ networks:
 
 Bring the proxy up with `docker compose -f docker-compose.stack-proxy.yml up -d`. Make sure the shared network exists first (`docker network create stack-proxy`). Every feature stack that wants routing must join this external network in addition to its own project network.
 
+### Local testing with the sample stacks
+
+The repository ships with two identical sample projects (`example/project1` and `example/project2`) that expose a simple Python HTTP server on port 3000. They are useful for tight feedback when developing the adapter:
+
+1. Create the shared network if needed: `docker network create stack-proxy`.
+2. Build and start the proxy locally: `docker compose -f docker-compose.stack-proxy.yml up -d --build stack-proxy`.
+3. In `example/project1`, run `COMPOSE_PROJECT_NAME=test1 docker compose up -d web`.
+4. In `example/project2`, run `COMPOSE_PROJECT_NAME=test2 docker compose up -d web`.
+5. Hit `http://web.test1.localhost` and `http://web.test2.localhost` (or `curl -H 'Host: web.test1.localhost' http://127.0.0.1`) to verify routing.
+
+Bring the stacks down with `docker compose down -v` inside each project when you finish testing.
+
 ## Validation & Troubleshooting
 
 1. Start stack-proxy via `docker compose -f docker-compose.proxy.yml up -d --build`.

@@ -37,7 +37,8 @@ module ContainerInfo =
     { ServiceName = inferServiceName info
       ProjectName = inferProjectName info
       Labels = info.Labels
-      ExposedPorts = info.ExposedPorts }
+      ExposedPorts = info.ExposedPorts
+      ContainerNames = info.Names }
 
   let fromListResponse (response: ContainerListResponse) =
     let names =

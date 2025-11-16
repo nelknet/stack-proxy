@@ -1,5 +1,6 @@
 namespace StackProxy.Adapter
 
+open System
 open System.Text
 
 module Rendering =
@@ -62,4 +63,5 @@ module Rendering =
     renderHttp sb httpRoutes
     renderTcp sb tcpRoutes
 
-    sb.ToString().Trim()
+    let rendered = sb.ToString().Trim()
+    if String.IsNullOrWhiteSpace rendered then rendered else rendered + Environment.NewLine

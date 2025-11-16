@@ -15,14 +15,16 @@ type ServiceMetadata =
     Host: string
     Mode: Protocol
     LocalPort: int
-    PublicPort: int option }
+    PublicPort: int option
+    ContainerAddress: string }
 
 [<CLIMutable>]
 type RawServiceInput =
   { ServiceName: string
     ProjectName: string option
     Labels: IReadOnlyDictionary<string, string>
-    ExposedPorts: int list }
+    ExposedPorts: int list
+    ContainerNames: string list }
 
 module Metadata =
   [<Literal>]
@@ -55,13 +57,18 @@ module Metadata =
 
   let private defaultHost serviceName projectName =
     match projectName with
-    | Some project when not (String.IsNullOrWhiteSpace project) -> $"{serviceName}.{project}.local"
-    | _ -> $"{serviceName}.local"
+    | Some project when not (String.IsNullOrWhiteSpace project) -> $"{serviceName}.{project}.localhost"
+    | _ -> $"{serviceName}.localhost"
 
   let private inferHost raw labels =
     match tryGet (label "host") labels with
     | Some host -> host
     | None -> defaultHost raw.ServiceName raw.ProjectName
+
+  let private inferContainerAddress (raw: RawServiceInput) =
+    match raw.ContainerNames with
+    | head :: _ when not (String.IsNullOrWhiteSpace head) -> head
+    | _ -> raw.ServiceName
 
   let private inferLocalPort mode raw labels =
     match tryGetInt (label "localport") labels with
@@ -83,6 +90,7 @@ module Metadata =
       let host = inferHost raw raw.Labels
       let localPort = inferLocalPort mode raw raw.Labels
       let publicPort = inferPublicPort raw.Labels
+      let containerAddress = inferContainerAddress raw
 
       Some
         { ServiceName = raw.ServiceName
@@ -90,4 +98,5 @@ module Metadata =
           Host = host
           Mode = mode
           LocalPort = localPort
-          PublicPort = publicPort }
+          PublicPort = publicPort
+          ContainerAddress = containerAddress }

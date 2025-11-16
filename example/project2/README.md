@@ -1,0 +1,1 @@
+Run with `COMPOSE_PROJECT_NAME=test2 docker compose up -d`.

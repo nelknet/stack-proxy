@@ -24,6 +24,6 @@ module Routing =
       | Protocol.Tcp -> $"tcp_{sanitize service.Host}"
 
     { BackendName = backend
-      ServerAddress = $"{service.ServiceName}:{service.LocalPort}"
+      ServerAddress = $"{service.ContainerAddress}:{service.LocalPort}"
       HostMatch = service.Host
       Mode = service.Mode }

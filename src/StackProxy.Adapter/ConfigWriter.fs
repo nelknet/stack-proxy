@@ -23,7 +23,7 @@ module ConfigWriter =
         let pidText = File.ReadAllText(pidFile).Trim()
         match Int32.TryParse pidText with
         | true, pid ->
-            Process.Start( ProcessStartInfo("haproxy", $"-f {configPath} -p {pidFile} -sf {pid}") ) |> ignore
+            Process.Start( ProcessStartInfo("haproxy", $"-f {configPath} -p {pidFile} -sf {pid} -db") ) |> ignore
         | _ -> ()
     | _ -> ()
 
